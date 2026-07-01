@@ -26,7 +26,7 @@ async function loadMovies() {
       "https://raw.githubusercontent.com/hjorturlarsen/IMDB-top-250/master/data/movies.json"
     );
     if (!response.ok) {
-      throw new Error("Movie list download failed");
+      throw new Error(`Failed to load movie list: HTTP ${response.status}`);
     }
 
     const movies = await response.json();
@@ -60,7 +60,7 @@ function spinWheel() {
   maxNumberInput.value = String(maxN);
 
   const selectedNumber = getRandomNumber(maxN);
-  const movie = imdbMovies[selectedNumber - 1] || imdbMovies[0] || "Movie not available";
+  const movie = imdbMovies[selectedNumber - 1];
 
   const extraRotation = 1800 + Math.floor(Math.random() * 1080);
   currentRotation += extraRotation;
