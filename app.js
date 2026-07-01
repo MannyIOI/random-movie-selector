@@ -40,6 +40,9 @@ async function loadMovies() {
     usingFallback = true;
     imdbMovies = fallbackMovies;
   }
+
+  maxNumberInput.max = String(imdbMovies.length);
+  maxNumberInput.value = String(imdbMovies.length);
 }
 
 function getRandomNumber(max) {
@@ -47,12 +50,17 @@ function getRandomNumber(max) {
 }
 
 function spinWheel() {
+  const availableCount = Math.max(1, imdbMovies.length);
   const parsed = Number(maxNumberInput.value);
-  const maxN = Number.isFinite(parsed) ? Math.max(1, Math.min(250, Math.floor(parsed))) : 250;
+  const maxN = Number.isFinite(parsed)
+    ? Math.max(1, Math.min(availableCount, Math.floor(parsed)))
+    : availableCount;
 
+  maxNumberInput.max = String(availableCount);
   maxNumberInput.value = String(maxN);
+
   const selectedNumber = getRandomNumber(maxN);
-  const movie = imdbMovies[selectedNumber - 1] || "Movie not available";
+  const movie = imdbMovies[selectedNumber - 1] || imdbMovies[0] || "Movie not available";
 
   const extraRotation = 1800 + Math.floor(Math.random() * 1080);
   currentRotation += extraRotation;
@@ -66,5 +74,5 @@ spinBtn.addEventListener("click", spinWheel);
 loadMovies().then(() => {
   result.textContent = usingFallback
     ? `Loaded fallback list (${imdbMovies.length} movies). Spin it, Happy + Happy!`
-    : `Loaded IMDb Top list (${imdbMovies.length} movies). Spin it, Happy + Happy!`;
+    : `Loaded IMDb Top 250 list (${imdbMovies.length} movies). Spin it, Happy + Happy!`;
 });
