@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Happy + Happy Movie Spinner</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>🎬 Happy + Happy Movie Night Spinner 🎡</h1>
+      <p class="tagline">Happy ❤️ Happy pick a random IMDb Top 250 movie!</p>
+    </header>
+
+    <main>
+      <section class="controls card">
+        <h2>Spin with Happy &amp; Happy</h2>
+        <label for="maxNumber">Choose max number (1 to 250)</label>
+        <input id="maxNumber" type="number" min="1" max="250" value="250" />
+        <button id="spinBtn">Spin for Happy + Happy</button>
+      </section>
+
+      <section class="spinner-area card">
+        <div class="spinner-wrap">
+          <div id="spinner" aria-hidden="true">
+            <div class="spinner-center">Happy 💖 Happy</div>
+          </div>
+        </div>
+        <div id="result" class="result" aria-live="polite">
+          Ready for a Happy + Happy movie surprise!
+        </div>
+      </section>
+
+      <section class="happy-wall card">
+        <h2>Happy &amp; Happy Wall</h2>
+        <p>Happy loves Happy. Happy picks movies with Happy. Happy and Happy forever! ✨</p>
+        <p>Happy + Happy 🎥 Happy + Happy 🍿 Happy + Happy 💕</p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Made with love for Happy and Happy.</p>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
