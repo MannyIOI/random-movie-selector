@@ -17,6 +17,7 @@ const fallbackMovies = [
 ];
 
 let imdbMovies = [];
+let usingFallback = false;
 let currentRotation = 0;
 
 async function loadMovies() {
@@ -32,9 +33,11 @@ async function loadMovies() {
     imdbMovies = movies.map((movie) => movie.name).filter(Boolean);
 
     if (!imdbMovies.length) {
+      usingFallback = true;
       imdbMovies = fallbackMovies;
     }
   } catch {
+    usingFallback = true;
     imdbMovies = fallbackMovies;
   }
 }
@@ -61,5 +64,7 @@ function spinWheel() {
 spinBtn.addEventListener("click", spinWheel);
 
 loadMovies().then(() => {
-  result.textContent = `Loaded ${imdbMovies.length} movies. Spin it, Happy + Happy!`;
+  result.textContent = usingFallback
+    ? `Loaded fallback list (${imdbMovies.length} movies). Spin it, Happy + Happy!`
+    : `Loaded IMDb Top list (${imdbMovies.length} movies). Spin it, Happy + Happy!`;
 });

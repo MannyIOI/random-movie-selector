@@ -9,7 +9,7 @@ A fun and interactive spinner that picks a random number from **1 to N** and map
 - Happy + Happy themed UI
 
 ## Run locally
-Open `/home/runner/work/random-movie-selector/random-movie-selector/index.html` in your browser.
+Open `index.html` in your browser.
 
 ## GitHub Pages
 After the workflow runs on `main`, the site is available at:
