@@ -1,85 +1,351 @@
-const spinBtn = document.getElementById("spinBtn");
+/* PAC-PICKS — retro movie arcade
+ * Data comes from movies-data.js: TOP_250_MOVIES and SPICY_MOVIES.
+ * Movies are stored locally so the picker no longer depends on a remote
+ * dataset (the old remote source is dead, which forced the app onto a
+ * 10-item fallback and capped every spin at the top 10).
+ */
+
+// ---- Elements ----
+const listSelect = document.getElementById("listSelect");
+const genreSelect = document.getElementById("genreSelect");
 const maxNumberInput = document.getElementById("maxNumber");
+const maxLabel = document.getElementById("maxLabel");
+const maxRow = document.getElementById("maxRow");
+const poolInfo = document.getElementById("poolInfo");
+const spinBtn = document.getElementById("spinBtn");
 const spinner = document.getElementById("spinner");
 const result = document.getElementById("result");
+const resultActions = document.getElementById("resultActions");
+const markWatchedBtn = document.getElementById("markWatchedBtn");
 
-const fallbackMovies = [
-  "The Shawshank Redemption",
-  "The Godfather",
-  "The Dark Knight",
-  "12 Angry Men",
-  "Schindler's List",
-  "The Lord of the Rings: The Return of the King",
-  "Pulp Fiction",
-  "The Lord of the Rings: The Fellowship of the Ring",
-  "The Good, the Bad and the Ugly",
-  "Forrest Gump"
-];
+const watchedList = document.getElementById("watchedList");
+const watchedCount = document.getElementById("watchedCount");
+const watchedEmpty = document.getElementById("watchedEmpty");
+const clearWatchedBtn = document.getElementById("clearWatchedBtn");
 
-let imdbMovies = [];
-let usingFallback = false;
-let currentRotation = 0;
+const tabs = document.querySelectorAll(".tab");
+const panels = {
+  play: document.getElementById("panel-play"),
+  watched: document.getElementById("panel-watched"),
+};
 
 const MIN_ROTATION_DEGREES = 1800;
 const RANDOM_ROTATION_RANGE = 1080;
+const WATCHED_STORAGE_KEY = "pacpicks.watched";
 
-async function loadMovies() {
+let currentRotation = 0;
+let lastPick = null;
+let spinning = false;
+
+// ---- Watched persistence (Set of "title|year" keys) ----
+function movieKey(movie) {
+  return `${movie.title}|${movie.year}`;
+}
+
+function loadWatched() {
   try {
-    const response = await fetch(
-      "https://raw.githubusercontent.com/hjorturlarsen/IMDB-top-250/master/data/movies.json"
-    );
-    if (!response.ok) {
-      throw new Error(`Failed to load movie list: HTTP ${response.status}`);
-    }
-
-    const movies = await response.json();
-    imdbMovies = movies.map((movie) => movie.name).filter(Boolean);
-
-    if (!imdbMovies.length) {
-      usingFallback = true;
-      imdbMovies = fallbackMovies;
-    }
+    const raw = localStorage.getItem(WATCHED_STORAGE_KEY);
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw);
+    return new Set(Array.isArray(arr) ? arr : []);
   } catch {
-    usingFallback = true;
-    imdbMovies = fallbackMovies;
+    return new Set();
+  }
+}
+
+function saveWatched(set) {
+  try {
+    localStorage.setItem(WATCHED_STORAGE_KEY, JSON.stringify([...set]));
+  } catch {
+    /* storage may be unavailable (private mode); ignore */
+  }
+}
+
+let watched = loadWatched();
+
+// ---- Data helpers ----
+function getActiveList() {
+  return listSelect.value === "spicy" ? SPICY_MOVIES : TOP_250_MOVIES;
+}
+
+function isRankedList() {
+  return listSelect.value !== "spicy";
+}
+
+function allGenres() {
+  const set = new Set();
+  [...TOP_250_MOVIES, ...SPICY_MOVIES].forEach((m) =>
+    (m.genres || []).forEach((g) => set.add(g))
+  );
+  return [...set].sort();
+}
+
+/* Movies eligible for the current spin: respects the selected list, the
+ * rank cap (ranked lists only), the chosen genre and the watched list. */
+function getCandidates() {
+  let pool = getActiveList();
+
+  if (isRankedList()) {
+    const maxN = clampMax();
+    pool = pool.slice(0, maxN);
   }
 
-  maxNumberInput.max = String(imdbMovies.length);
-  maxNumberInput.value = String(imdbMovies.length);
+  const genre = genreSelect.value;
+  if (genre) {
+    pool = pool.filter((m) => (m.genres || []).includes(genre));
+  }
+
+  // Keep original index so ranked lists can report the true IMDb rank.
+  return pool
+    .map((movie) => ({ movie, rank: getActiveList().indexOf(movie) + 1 }))
+    .filter(({ movie }) => !watched.has(movieKey(movie)));
 }
 
-function getRandomNumber(max) {
-  return Math.floor(Math.random() * max) + 1;
-}
-
-function spinWheel() {
-  const availableCount = Math.max(1, imdbMovies.length);
+function clampMax() {
+  const listLength = getActiveList().length;
   const parsed = Number(maxNumberInput.value);
   const maxN = Number.isFinite(parsed)
-    ? Math.max(1, Math.min(availableCount, Math.floor(parsed)))
-    : availableCount;
+    ? Math.max(1, Math.min(listLength, Math.floor(parsed)))
+    : listLength;
+  return maxN;
+}
 
-  maxNumberInput.max = String(availableCount);
-  maxNumberInput.value = String(maxN);
+// ---- UI sync ----
+function populateGenres() {
+  const genres = allGenres();
+  for (const g of genres) {
+    const opt = document.createElement("option");
+    opt.value = g;
+    opt.textContent = g.toUpperCase();
+    genreSelect.appendChild(opt);
+  }
+}
 
-  const selectedNumber = getRandomNumber(maxN);
-  const movie = imdbMovies[selectedNumber - 1];
-  if (!movie) {
-    result.textContent = "⚠️ Happy + Happy could not find a movie. Try spinning again!";
+function syncListUI() {
+  const list = getActiveList();
+  if (isRankedList()) {
+    maxRow.hidden = false;
+    maxNumberInput.max = String(list.length);
+    maxLabel.textContent = String(list.length);
+    if (Number(maxNumberInput.value) > list.length || !maxNumberInput.value) {
+      maxNumberInput.value = String(list.length);
+    }
+  } else {
+    // Spicy list is not rank-ordered, so a rank cap makes no sense.
+    maxRow.hidden = true;
+  }
+  updatePoolInfo();
+}
+
+function updatePoolInfo() {
+  const available = getCandidates().length;
+  const listName = isRankedList() ? "IMDb Top 250" : "Spicy";
+  const genre = genreSelect.value ? ` · ${genreSelect.value}` : "";
+  poolInfo.textContent = `${available} movie${available === 1 ? "" : "s"} in the lottery (${listName}${genre}).`;
+  spinBtn.disabled = available === 0;
+  if (available === 0) {
+    poolInfo.textContent =
+      "No movies match — try another genre, raise the max rank, or clear some watched titles.";
+  }
+}
+
+// ---- Spin ----
+function spin() {
+  if (spinning) return;
+  const candidates = getCandidates();
+  if (!candidates.length) {
+    updatePoolInfo();
     return;
   }
 
-  const extraRotation = MIN_ROTATION_DEGREES + Math.floor(Math.random() * RANDOM_ROTATION_RANGE);
+  spinning = true;
+  spinBtn.disabled = true;
+  resultActions.hidden = true;
+  spinner.classList.add("chomp");
+  result.textContent = "WAKA WAKA…";
+
+  const choice = candidates[Math.floor(Math.random() * candidates.length)];
+  lastPick = choice.movie;
+
+  const extraRotation =
+    MIN_ROTATION_DEGREES + Math.floor(Math.random() * RANDOM_ROTATION_RANGE);
   currentRotation += extraRotation;
   spinner.style.transform = `rotate(${currentRotation}deg)`;
 
-  result.textContent = `🎉 Happy + Happy got #${selectedNumber}: ${movie}`;
+  window.setTimeout(() => revealResult(choice), 2800);
 }
 
-spinBtn.addEventListener("click", spinWheel);
+function revealResult(choice) {
+  spinning = false;
+  spinner.classList.remove("chomp");
 
-loadMovies().then(() => {
-  result.textContent = usingFallback
-    ? `Loaded fallback list (${imdbMovies.length} movies). Spin it, Happy + Happy!`
-    : `Loaded IMDb Top 250 list (${imdbMovies.length} movies). Spin it, Happy + Happy!`;
+  const { movie, rank } = choice;
+  const genres = (movie.genres || []).join(" · ") || "—";
+  const label = isRankedList()
+    ? `<span class="rank">#${rank}</span> ${escapeHtml(movie.title)} (${movie.year})`
+    : `🌶️ ${escapeHtml(movie.title)} (${movie.year})`;
+
+  result.innerHTML = `${label}<span class="genre">${escapeHtml(genres)}</span>`;
+  resultActions.hidden = false;
+  spinBtn.disabled = false;
+  fireConfetti();
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// ---- Watched actions ----
+function markLastWatched() {
+  if (!lastPick) return;
+  watched.add(movieKey(lastPick));
+  saveWatched(watched);
+  renderWatched();
+  updatePoolInfo();
+  resultActions.hidden = true;
+  result.innerHTML = `${escapeHtml(lastPick.title)} added to WATCHED ✔`;
+  lastPick = null;
+}
+
+function removeWatched(key) {
+  watched.delete(key);
+  saveWatched(watched);
+  renderWatched();
+  updatePoolInfo();
+}
+
+function renderWatched() {
+  const keys = [...watched];
+  watchedCount.textContent = `${keys.length} WATCHED`;
+  watchedList.innerHTML = "";
+  watchedEmpty.hidden = keys.length > 0;
+
+  // Map keys back to titles for display.
+  const byKey = new Map();
+  [...TOP_250_MOVIES, ...SPICY_MOVIES].forEach((m) => byKey.set(movieKey(m), m));
+
+  keys
+    .map((key) => ({ key, movie: byKey.get(key) }))
+    .sort((a, b) => {
+      const at = a.movie ? a.movie.title : a.key;
+      const bt = b.movie ? b.movie.title : b.key;
+      return at.localeCompare(bt);
+    })
+    .forEach(({ key, movie }) => {
+      const li = document.createElement("li");
+      const span = document.createElement("span");
+      span.textContent = movie ? `${movie.title} (${movie.year})` : key;
+      const btn = document.createElement("button");
+      btn.className = "remove-btn";
+      btn.type = "button";
+      btn.textContent = "✕";
+      btn.setAttribute("aria-label", `Remove ${span.textContent} from watched`);
+      btn.addEventListener("click", () => removeWatched(key));
+      li.append(span, btn);
+      watchedList.appendChild(li);
+    });
+}
+
+function clearWatched() {
+  if (!watched.size) return;
+  watched = new Set();
+  saveWatched(watched);
+  renderWatched();
+  updatePoolInfo();
+}
+
+// ---- Tabs ----
+function switchTab(name) {
+  tabs.forEach((t) => {
+    const active = t.dataset.tab === name;
+    t.classList.toggle("active", active);
+    t.setAttribute("aria-selected", active ? "true" : "false");
+  });
+  Object.entries(panels).forEach(([key, panel]) => {
+    const active = key === name;
+    panel.classList.toggle("active", active);
+    panel.hidden = !active;
+  });
+}
+
+// ---- Confetti (self-contained canvas, no dependencies) ----
+const confettiCanvas = document.getElementById("confetti");
+const cctx = confettiCanvas.getContext("2d");
+let confettiPieces = [];
+let confettiRAF = null;
+
+function sizeConfetti() {
+  confettiCanvas.width = window.innerWidth;
+  confettiCanvas.height = window.innerHeight;
+}
+window.addEventListener("resize", sizeConfetti);
+sizeConfetti();
+
+function fireConfetti() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const colors = ["#ffff00", "#ff0000", "#00ffff", "#ffb8ff", "#ffb852", "#2121de"];
+  const count = 160;
+  for (let i = 0; i < count; i++) {
+    confettiPieces.push({
+      x: Math.random() * confettiCanvas.width,
+      y: -20 - Math.random() * confettiCanvas.height * 0.3,
+      w: 6 + Math.random() * 6,
+      h: 8 + Math.random() * 8,
+      vx: -3 + Math.random() * 6,
+      vy: 3 + Math.random() * 5,
+      rot: Math.random() * Math.PI,
+      vr: -0.2 + Math.random() * 0.4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      life: 120 + Math.random() * 60,
+    });
+  }
+  if (!confettiRAF) confettiRAF = requestAnimationFrame(drawConfetti);
+}
+
+function drawConfetti() {
+  cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  confettiPieces = confettiPieces.filter((p) => p.life > 0 && p.y < confettiCanvas.height + 40);
+  for (const p of confettiPieces) {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.08;
+    p.rot += p.vr;
+    p.life -= 1;
+    cctx.save();
+    cctx.translate(p.x, p.y);
+    cctx.rotate(p.rot);
+    cctx.fillStyle = p.color;
+    cctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+    cctx.restore();
+  }
+  if (confettiPieces.length) {
+    confettiRAF = requestAnimationFrame(drawConfetti);
+  } else {
+    cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    confettiRAF = null;
+  }
+}
+
+// ---- Wire up ----
+spinBtn.addEventListener("click", spin);
+markWatchedBtn.addEventListener("click", markLastWatched);
+clearWatchedBtn.addEventListener("click", clearWatched);
+listSelect.addEventListener("change", syncListUI);
+genreSelect.addEventListener("change", updatePoolInfo);
+maxNumberInput.addEventListener("input", updatePoolInfo);
+maxNumberInput.addEventListener("change", () => {
+  maxNumberInput.value = String(clampMax());
+  updatePoolInfo();
 });
+tabs.forEach((t) => t.addEventListener("click", () => switchTab(t.dataset.tab)));
+
+// ---- Init ----
+populateGenres();
+renderWatched();
+syncListUI();
+result.textContent = `READY PLAYER ONE — ${TOP_250_MOVIES.length} Top 250 & ${SPICY_MOVIES.length} spicy picks loaded.`;

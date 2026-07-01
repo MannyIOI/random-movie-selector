@@ -3,45 +3,104 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Happy + Happy Movie Spinner</title>
+    <title>PAC-PICKS · Retro Movie Arcade</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header>
-      <h1>🎬 Happy + Happy Movie Night Spinner 🎡</h1>
-      <p class="tagline">Happy ❤️ Happy pick a random IMDb Top 250 movie!</p>
+    <div class="scanlines" aria-hidden="true"></div>
+    <canvas id="confetti" aria-hidden="true"></canvas>
+
+    <header class="arcade-header">
+      <div class="marquee-dots" aria-hidden="true">
+        <span class="dot"></span><span class="dot"></span
+        ><span class="pac">ᗧ</span><span class="ghost g1">ᗣ</span
+        ><span class="ghost g2">ᗣ</span><span class="ghost g3">ᗣ</span>
+      </div>
+      <h1 class="neon">PAC&#8209;PICKS</h1>
+      <p class="tagline">INSERT COIN · PICK A RANDOM MOVIE · PRESS START</p>
     </header>
 
-    <main>
-      <section class="controls card">
-        <h2>Spin with Happy &amp; Happy</h2>
-        <label for="maxNumber">Choose max number (1 to 250)</label>
-        <input id="maxNumber" type="number" min="1" max="250" value="250" />
-        <button id="spinBtn">Spin for Happy + Happy</button>
-      </section>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab active" id="tab-play" role="tab" aria-selected="true" data-tab="play">
+        ▶ PLAY
+      </button>
+      <button class="tab" id="tab-watched" role="tab" aria-selected="false" data-tab="watched">
+        ✔ WATCHED
+      </button>
+    </nav>
 
-      <section class="spinner-area card">
-        <div class="spinner-wrap">
-          <div id="spinner" aria-hidden="true">
-            <div class="spinner-center">Happy 💖 Happy</div>
+    <main>
+      <!-- PLAY PANEL -->
+      <section class="panel active card" id="panel-play" role="tabpanel" aria-labelledby="tab-play">
+        <h2 class="panel-title">CONTROLS</h2>
+
+        <div class="controls">
+          <div class="control-row">
+            <label for="listSelect">LIST</label>
+            <select id="listSelect">
+              <option value="top250">IMDb TOP 250</option>
+              <option value="spicy">🌶️ SPICY (outside Top 250)</option>
+            </select>
+          </div>
+
+          <div class="control-row">
+            <label for="genreSelect">GENRE</label>
+            <select id="genreSelect">
+              <option value="">ALL GENRES</option>
+            </select>
+          </div>
+
+          <div class="control-row" id="maxRow">
+            <label for="maxNumber">MAX RANK (1&ndash;<span id="maxLabel">250</span>)</label>
+            <input id="maxNumber" type="number" min="1" max="250" value="250" />
+          </div>
+
+          <p class="pool-info" id="poolInfo" aria-live="polite">Loading movies…</p>
+
+          <button id="spinBtn" class="start-btn">PRESS START</button>
+        </div>
+
+        <div class="spinner-area">
+          <div class="spinner-wrap">
+            <div id="spinner" aria-hidden="true">
+              <div class="pac-face">ᗧ</div>
+            </div>
+          </div>
+          <div id="result" class="result" aria-live="polite">
+            READY PLAYER ONE
+          </div>
+          <div class="result-actions" id="resultActions" hidden>
+            <button id="markWatchedBtn" class="mini-btn">✔ MARK WATCHED</button>
           </div>
         </div>
-        <div id="result" class="result" aria-live="polite">
-          Ready for a Happy + Happy movie surprise!
-        </div>
       </section>
 
-      <section class="happy-wall card">
-        <h2>Happy &amp; Happy Wall</h2>
-        <p>Happy loves Happy. Happy picks movies with Happy. Happy and Happy forever! ✨</p>
-        <p>Happy + Happy 🎥 Happy + Happy 🍿 Happy + Happy 💕</p>
+      <!-- WATCHED PANEL -->
+      <section class="panel card" id="panel-watched" role="tabpanel" aria-labelledby="tab-watched" hidden>
+        <h2 class="panel-title">WATCHED &mdash; OUT OF THE LOTTERY</h2>
+        <p class="pool-info">
+          These titles are excluded from every spin. Removing one puts it back in play.
+        </p>
+        <div class="watched-toolbar">
+          <span id="watchedCount" class="badge">0 WATCHED</span>
+          <button id="clearWatchedBtn" class="mini-btn danger">CLEAR ALL</button>
+        </div>
+        <ul id="watchedList" class="watched-list"></ul>
+        <p id="watchedEmpty" class="empty-msg">No movies watched yet. Go spin some!</p>
       </section>
     </main>
 
     <footer>
-      <p>Made with love for Happy and Happy.</p>
+      <p>© PAC&#8209;PICKS ARCADE · MOVIE NIGHT EDITION</p>
     </footer>
 
+    <script src="movies-data.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

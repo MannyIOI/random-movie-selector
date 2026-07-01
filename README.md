@@ -1,23 +1,26 @@
 # random-movie-selector
 
-A fun and interactive spinner that picks a random number from **1 to N** and maps it to the corresponding movie in the **IMDb Top 250** list.
+**PAC-PICKS** — a retro, MS Pac-Man-inspired arcade for picking your next movie night title.
 
 ## Features
-- Spinner animation for movie selection
-- Number range input from 1 to 250
-- Pulls IMDb Top 250 movie names from a public dataset
-- Automatically falls back to a local starter list if external fetch fails
-- Happy + Happy themed UI
+- 🕹️ Retro arcade UI (CRT scanlines, neon glow, chasing Pac-Man & ghosts)
+- 🎯 Random picker with a spinning Pac-Man reel and **confetti** on every reveal
+- 🔢 **Max rank** control that actually sticks (pick from the top *N* of the IMDb Top 250)
+- 🌶️ **Spicy** list of picks that are outside the IMDb Top 250
+- 🎭 **Genre** filtering
+- ✔ **Watched** tab — mark titles as watched so they are excluded from the lottery (saved in your browser via `localStorage`)
+
+## How it works
+Movie data ships with the app in [`movies-data.js`](movies-data.js):
+- `TOP_250_MOVIES` — the IMDb Top 250 (approx. rank order), each with title, year and genres
+- `SPICY_MOVIES` — a curated list of movies that are **not** in the Top 250
+
+Because the data is bundled locally, the picker no longer depends on any external
+network request. (The previous remote data source went offline, which forced the
+app onto a 10-item fallback and capped every spin at the top 10.)
 
 ## Run locally
 Open `index.html` in your browser.
-
-## Data source note
-The app fetches movie data from:
-
-https://raw.githubusercontent.com/hjorturlarsen/IMDB-top-250/master/data/movies.json
-
-If this source is unavailable, the app uses a built-in fallback movie list.
 
 ## GitHub Pages
 After the workflow runs on `main`, the site is available at:
