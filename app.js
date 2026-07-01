@@ -61,6 +61,10 @@ function spinWheel() {
 
   const selectedNumber = getRandomNumber(maxN);
   const movie = imdbMovies[selectedNumber - 1];
+  if (!movie) {
+    result.textContent = "⚠️ Happy + Happy could not find a movie. Try spinning again!";
+    return;
+  }
 
   const extraRotation = 1800 + Math.floor(Math.random() * 1080);
   currentRotation += extraRotation;
