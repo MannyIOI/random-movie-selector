@@ -3,101 +3,115 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PAC-PICKS · Retro Movie Arcade</title>
+    <title>Happy &amp; Happy · Our Movie Night</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500&family=Poppins:wght@300;400;500;600&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="scanlines" aria-hidden="true"></div>
+    <!-- Soft animated aurora backdrop -->
+    <div class="aurora" aria-hidden="true">
+      <span class="blob b1"></span>
+      <span class="blob b2"></span>
+      <span class="blob b3"></span>
+    </div>
+    <!-- Gentle floating hearts drifting up the page -->
+    <div class="floating-hearts" aria-hidden="true"></div>
+    <!-- Celebration hearts canvas -->
     <canvas id="confetti" aria-hidden="true"></canvas>
 
-    <header class="arcade-header">
-      <div class="marquee-dots" aria-hidden="true">
-        <span class="dot"></span><span class="dot"></span
-        ><span class="pac">ᗧ</span><span class="ghost g1">ᗣ</span
-        ><span class="ghost g2">ᗣ</span><span class="ghost g3">ᗣ</span>
-      </div>
-      <h1 class="neon">PAC&#8209;PICKS</h1>
-      <p class="tagline">INSERT COIN · PICK A RANDOM MOVIE · PRESS START</p>
+    <header class="hero">
+      <p class="kicker" aria-hidden="true">
+        <span class="spark">✦</span> a little date-night ritual <span class="spark">✦</span>
+      </p>
+      <h1 class="title">
+        <span class="name">Happy</span>
+        <span class="amp">&amp;</span>
+        <span class="name">Happy</span>
+      </h1>
+      <p class="tagline">
+        Two hearts, one couch, endless movies — let love pick tonight's story. <span class="heart-inline">♥</span>
+      </p>
     </header>
 
     <nav class="tabs" role="tablist" aria-label="Sections">
       <button class="tab active" id="tab-play" role="tab" aria-selected="true" data-tab="play">
-        ▶ PLAY
+        ♥ Pick a Movie
       </button>
       <button class="tab" id="tab-watched" role="tab" aria-selected="false" data-tab="watched">
-        ✔ WATCHED
+        ✓ Watched Together
       </button>
     </nav>
 
     <main>
       <!-- PLAY PANEL -->
       <section class="panel active card" id="panel-play" role="tabpanel" aria-labelledby="tab-play">
-        <h2 class="panel-title">CONTROLS</h2>
+        <h2 class="panel-title">Set the Mood</h2>
 
         <div class="controls">
           <div class="control-row">
-            <label for="listSelect">LIST</label>
+            <label for="listSelect">Collection</label>
             <select id="listSelect">
-              <option value="top250">IMDb TOP 250</option>
-              <option value="spicy">🌶️ SPICY (outside Top 250)</option>
+              <option value="top250">💛 IMDb Top 250</option>
+              <option value="spicy">🌶️ Something Spicy (outside the Top 250)</option>
             </select>
           </div>
 
           <div class="control-row">
-            <label for="genreSelect">GENRE</label>
+            <label for="genreSelect">Mood / Genre</label>
             <select id="genreSelect">
-              <option value="">ALL GENRES</option>
+              <option value="">Any mood, surprise us</option>
             </select>
           </div>
 
           <div class="control-row" id="maxRow">
-            <label for="maxNumber">MAX RANK (1&ndash;<span id="maxLabel">250</span>)</label>
+            <label for="maxNumber">Top picks only (1&ndash;<span id="maxLabel">250</span>)</label>
             <input id="maxNumber" type="number" min="1" max="250" value="250" />
           </div>
 
-          <p class="pool-info" id="poolInfo" aria-live="polite">Loading movies…</p>
+          <p class="pool-info" id="poolInfo" aria-live="polite">Gathering our movies…</p>
 
-          <button id="spinBtn" class="start-btn">PRESS START</button>
+          <button id="spinBtn" class="start-btn">
+            <span class="btn-heart" aria-hidden="true">♥</span> Pick Our Movie
+          </button>
         </div>
 
         <div class="spinner-area">
           <div class="spinner-wrap">
             <div id="spinner" aria-hidden="true">
-              <div class="pac-face">ᗧ</div>
+              <div class="pac-face">♥</div>
             </div>
           </div>
           <div id="result" class="result" aria-live="polite">
-            READY PLAYER ONE
+            Ready when you are, lovebirds.
           </div>
           <div class="result-actions" id="resultActions" hidden>
-            <button id="markWatchedBtn" class="mini-btn">✔ MARK WATCHED</button>
+            <button id="markWatchedBtn" class="mini-btn">✓ We Watched This</button>
           </div>
         </div>
       </section>
 
       <!-- WATCHED PANEL -->
       <section class="panel card" id="panel-watched" role="tabpanel" aria-labelledby="tab-watched" hidden>
-        <h2 class="panel-title">WATCHED &mdash; OUT OF THE LOTTERY</h2>
+        <h2 class="panel-title">Watched Together &mdash; Our Little History</h2>
         <p class="pool-info">
-          These titles are excluded from every spin. Removing one puts it back in play.
+          Every title here is one we've already shared. It's kept out of the draw — remove one to relive it again.
         </p>
         <div class="watched-toolbar">
-          <span id="watchedCount" class="badge">0 WATCHED</span>
-          <button id="clearWatchedBtn" class="mini-btn danger">CLEAR ALL</button>
+          <span id="watchedCount" class="badge">0 watched</span>
+          <button id="clearWatchedBtn" class="mini-btn danger">Clear All</button>
         </div>
         <ul id="watchedList" class="watched-list"></ul>
-        <p id="watchedEmpty" class="empty-msg">No movies watched yet. Go spin some!</p>
+        <p id="watchedEmpty" class="empty-msg">No movies watched yet — go make a memory together. ♥</p>
       </section>
     </main>
 
     <footer>
-      <p>© PAC&#8209;PICKS ARCADE · MOVIE NIGHT EDITION</p>
+      <p>Made with ♥ for Happy &amp; Happy · Movie Night Edition</p>
     </footer>
 
     <script src="movies-data.js"></script>

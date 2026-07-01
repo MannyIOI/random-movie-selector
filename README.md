@@ -1,14 +1,16 @@
 # random-movie-selector
 
-**PAC-PICKS** — a retro, MS Pac-Man-inspired arcade for picking your next movie night title.
+**Happy &amp; Happy** — a romantic, animated movie-night ritual for two. Let love pick tonight's story. ♥
 
 ## Features
-- 🕹️ Retro arcade UI (CRT scanlines, neon glow, chasing Pac-Man & ghosts)
-- 🎯 Random picker with a spinning Pac-Man reel and **confetti** on every reveal
-- 🔢 **Max rank** control that actually sticks (pick from the top *N* of the IMDb Top 250)
+- 💖 Romantic, AWWWARDS-inspired UI (animated aurora backdrop, glassmorphism cards, drifting hearts, shimmering "Happy & Happy" title)
+- ✨ Rich micro-interactions and animations (heartbeat pulses, shine-sweep button, hover lifts, animated spinner)
+- 🎯 Random picker with a pulsing heart reel and a burst of **heart confetti** on every reveal
+- 🔢 **Top picks** control that actually sticks (choose from the top *N* of the IMDb Top 250)
 - 🌶️ **Spicy** list of picks that are outside the IMDb Top 250
-- 🎭 **Genre** filtering
-- ✔ **Watched** tab — mark titles as watched so they are excluded from the lottery (saved in your browser via `localStorage`)
+- 🎭 **Mood / genre** filtering
+- ✓ **Watched Together** tab — mark titles you've shared so they're excluded from the draw (saved in your browser via `localStorage`)
+- ♿ Respects `prefers-reduced-motion` — animations gracefully turn off for those who prefer less motion
 
 ## How it works
 Movie data ships with the app in [`movies-data.js`](movies-data.js):
