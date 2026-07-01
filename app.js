@@ -1,4 +1,4 @@
-/* PAC-PICKS — retro movie arcade
+/* Happy & Happy — our romantic movie night picker
  * Data comes from movies-data.js: TOP_250_MOVIES and SPICY_MOVIES.
  * Movies are stored locally so the picker no longer depends on a remote
  * dataset (the old remote source is dead, which forced the app onto a
@@ -141,11 +141,11 @@ function updatePoolInfo() {
   const available = getCandidates().length;
   const listName = isRankedList() ? "IMDb Top 250" : "Spicy";
   const genre = genreSelect.value ? ` · ${genreSelect.value}` : "";
-  poolInfo.textContent = `${available} movie${available === 1 ? "" : "s"} in the lottery (${listName}${genre}).`;
+  poolInfo.textContent = `${available} movie${available === 1 ? "" : "s"} waiting for you two (${listName}${genre}). ♥`;
   spinBtn.disabled = available === 0;
   if (available === 0) {
     poolInfo.textContent =
-      "No movies match — try another genre, raise the max rank, or clear some watched titles.";
+      "No movies match — try another mood, raise the top picks, or bring back a watched title.";
   }
 }
 
@@ -162,7 +162,7 @@ function spin() {
   spinBtn.disabled = true;
   resultActions.hidden = true;
   spinner.classList.add("chomp");
-  result.textContent = "WAKA WAKA…";
+  result.textContent = "Falling in love with a pick…";
 
   const choice = candidates[Math.floor(Math.random() * candidates.length)];
   lastPick = choice.movie;
@@ -185,7 +185,7 @@ function revealResult(choice) {
     ? `<span class="rank">#${rank}</span> ${escapeHtml(movie.title)} (${movie.year})`
     : `🌶️ ${escapeHtml(movie.title)} (${movie.year})`;
 
-  result.innerHTML = `${label}<span class="genre">${escapeHtml(genres)}</span>`;
+  result.innerHTML = `Tonight, together: ${label}<span class="genre">${escapeHtml(genres)}</span>`;
   resultActions.hidden = false;
   spinBtn.disabled = false;
   fireConfetti();
@@ -208,7 +208,7 @@ function markLastWatched() {
   renderWatched();
   updatePoolInfo();
   resultActions.hidden = true;
-  result.innerHTML = `${escapeHtml(lastPick.title)} added to WATCHED ✔`;
+  result.innerHTML = `${escapeHtml(lastPick.title)} added to our memories together ♥`;
   lastPick = null;
 }
 
@@ -288,14 +288,13 @@ sizeConfetti();
 
 function fireConfetti() {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const colors = ["#ffff00", "#ff0000", "#00ffff", "#ffb8ff", "#ffb852", "#2121de"];
-  const count = 160;
+  const colors = ["#ff5d8f", "#e11d67", "#ffcf8b", "#c8a2ff", "#ffd9e8", "#f5a742"];
+  const count = 140;
   for (let i = 0; i < count; i++) {
     confettiPieces.push({
       x: Math.random() * confettiCanvas.width,
       y: -20 - Math.random() * confettiCanvas.height * 0.3,
-      w: 6 + Math.random() * 6,
-      h: 8 + Math.random() * 8,
+      size: 10 + Math.random() * 12,
       vx: -3 + Math.random() * 6,
       vy: 3 + Math.random() * 5,
       rot: Math.random() * Math.PI,
@@ -305,6 +304,20 @@ function fireConfetti() {
     });
   }
   if (!confettiRAF) confettiRAF = requestAnimationFrame(drawConfetti);
+}
+
+/* Draw a heart shape centred at (0,0) scaled to `s`. */
+function heartPath(ctx, s) {
+  ctx.beginPath();
+  const t = s / 16;
+  ctx.moveTo(0, 4 * t);
+  ctx.bezierCurveTo(0, 1 * t, -3 * t, -2 * t, -6 * t, -2 * t);
+  ctx.bezierCurveTo(-11 * t, -2 * t, -11 * t, 4 * t, -11 * t, 4 * t);
+  ctx.bezierCurveTo(-11 * t, 8 * t, -6 * t, 11 * t, 0, 15 * t);
+  ctx.bezierCurveTo(6 * t, 11 * t, 11 * t, 8 * t, 11 * t, 4 * t);
+  ctx.bezierCurveTo(11 * t, 4 * t, 11 * t, -2 * t, 6 * t, -2 * t);
+  ctx.bezierCurveTo(3 * t, -2 * t, 0, 1 * t, 0, 4 * t);
+  ctx.closePath();
 }
 
 function drawConfetti() {
@@ -319,8 +332,10 @@ function drawConfetti() {
     cctx.save();
     cctx.translate(p.x, p.y);
     cctx.rotate(p.rot);
+    cctx.globalAlpha = Math.max(0, Math.min(1, p.life / 40));
     cctx.fillStyle = p.color;
-    cctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+    heartPath(cctx, p.size);
+    cctx.fill();
     cctx.restore();
   }
   if (confettiPieces.length) {
@@ -328,6 +343,26 @@ function drawConfetti() {
   } else {
     cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
     confettiRAF = null;
+  }
+}
+
+// ---- Ambient floating hearts drifting up the background ----
+function seedFloatingHearts() {
+  const container = document.querySelector(".floating-hearts");
+  if (!container) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const glyphs = ["♥", "❤", "💕", "💖"];
+  const total = 14;
+  for (let i = 0; i < total; i++) {
+    const heart = document.createElement("span");
+    heart.className = "fh";
+    heart.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+    heart.style.left = `${Math.random() * 100}%`;
+    heart.style.fontSize = `${12 + Math.random() * 26}px`;
+    heart.style.animationDuration = `${10 + Math.random() * 14}s`;
+    heart.style.animationDelay = `${-Math.random() * 20}s`;
+    heart.style.opacity = `${0.4 + Math.random() * 0.5}`;
+    container.appendChild(heart);
   }
 }
 
@@ -348,4 +383,5 @@ tabs.forEach((t) => t.addEventListener("click", () => switchTab(t.dataset.tab)))
 populateGenres();
 renderWatched();
 syncListUI();
-result.textContent = `READY PLAYER ONE — ${TOP_250_MOVIES.length} Top 250 & ${SPICY_MOVIES.length} spicy picks loaded.`;
+seedFloatingHearts();
+result.textContent = `Ready when you are, lovebirds — ${TOP_250_MOVIES.length} Top 250 & ${SPICY_MOVIES.length} spicy picks waiting. ♥`;
