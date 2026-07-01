@@ -735,7 +735,7 @@ const TOP_250_MOVIES = [
   },
   {
     "title": "2001: A Space Odyssey",
-    "year": 1970,
+    "year": 1968,
     "genres": [
       "Adventure",
       "Sci-Fi"
@@ -743,7 +743,7 @@ const TOP_250_MOVIES = [
   },
   {
     "title": "A Clockwork Orange",
-    "year": 1972,
+    "year": 1971,
     "genres": [
       "Crime",
       "Sci-Fi"
@@ -1475,7 +1475,7 @@ const TOP_250_MOVIES = [
   },
   {
     "title": "Tôkyô monogatari",
-    "year": 1972,
+    "year": 1953,
     "genres": [
       "Drama"
     ]
@@ -2145,12 +2145,12 @@ const SPICY_MOVIES = [
     ]
   },
   {
-    "title": "Kill Bill: Vol. 1",
-    "year": 2003,
+    "title": "Wild Things",
+    "year": 1998,
     "genres": [
-      "Action",
       "Crime",
-      "Thriller"
+      "Drama",
+      "Mystery"
     ]
   },
   {
@@ -2209,11 +2209,9 @@ const SPICY_MOVIES = [
     ]
   },
   {
-    "title": "Wolf of Wall Street: After Dark",
-    "year": 2013,
+    "title": "Showgirls",
+    "year": 1995,
     "genres": [
-      "Comedy",
-      "Crime",
       "Drama"
     ]
   },
@@ -2250,10 +2248,11 @@ const SPICY_MOVIES = [
     ]
   },
   {
-    "title": "Fight Club: Underground",
-    "year": 1999,
+    "title": "Unfaithful",
+    "year": 2002,
     "genres": [
       "Drama",
+      "Romance",
       "Thriller"
     ]
   },
@@ -2329,11 +2328,12 @@ const SPICY_MOVIES = [
     ]
   },
   {
-    "title": "Scarface",
-    "year": 1983,
+    "title": "Original Sin",
+    "year": 2001,
     "genres": [
       "Crime",
-      "Drama"
+      "Drama",
+      "Romance"
     ]
   },
   {
